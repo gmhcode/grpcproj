@@ -119,12 +119,17 @@ func main() {
 	fmt.Println("Hello world")
 	lis, err := net.Listen("tcp", "0.0.0.0:50051")
 	if err != nil {
-
 		log.Fatalf("Failed to listen: %v", err)
 	}
 
-	options := getSSLServerOptions()
-	s := grpc.NewServer(options)
+	tls := false
+	opts := []grpc.ServerOption{}
+	//when tls is true, use SSL stuff
+	if tls {
+		opts = append(opts, getSSLServerOptions())
+	}
+
+	s := grpc.NewServer(opts...)
 	// s := grpc.NewServer()
 
 	//Gets the "Greet" functions ready

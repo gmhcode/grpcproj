@@ -14,16 +14,28 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func main() {
-	fmt.Println("hello i am a client")
+func generateSSLOptions() grpc.DialOption {
 	certFile := "ssl/ca.crt" //Certificate Authority Trust Certificate
 	creds, sslErr := credentials.NewClientTLSFromFile(certFile, "")
 	if sslErr != nil {
 		log.Fatalf("Error While loading ca trust certificate: %v", sslErr)
-		return
+		return nil
 	}
 	//SSL credentials
 	opts := grpc.WithTransportCredentials(creds)
+	return opts
+}
+
+func main() {
+	fmt.Println("hello i am a client")
+
+	tls := false
+	opts := grpc.WithInsecure()
+	//when tls is true, it will use SSL stuff
+	if tls {
+		opts = generateSSLOptions()
+	}
+
 	cc, err := grpc.Dial("localhost:50051", opts)
 	// cc, err := grpc.Dial("localhost:50051", grpc.WithInsecure())
 	if err != nil {
