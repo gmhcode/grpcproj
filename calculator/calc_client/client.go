@@ -9,6 +9,8 @@ import (
 
 	"github.com/grpcproj/calculator/calcpb"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 func main() {
@@ -22,10 +24,12 @@ func main() {
 	// doUnary(c)
 	// doServerStreaming(c)
 	// doClientStreaming(c)
-	doBiDiStreaming(c)
+	// doBiDiStreaming(c)
+	doErrorUnary(c)
 }
 
 func doUnary(c calcpb.SumServiceClient) {
+	fmt.Println("Starting to do a Sum Unary RPC...")
 	request := &calcpb.SumRequest{
 		Sum: &calcpb.Sum{
 			FirstNumber: 1,
@@ -136,4 +140,43 @@ func doBiDiStreaming(c calcpb.SumServiceClient) {
 		close(waitc)
 	}()
 	<-waitc
+}
+
+func doErrorUnary(c calcpb.SumServiceClient) {
+	fmt.Println("Starting to do a QuareRoot Unary RPC...")
+
+	// correct call
+	fmt.Println("Doing Correct call")
+	doErrorCall(c, 10)
+	// error call
+	fmt.Println("Doing error call")
+	doErrorCall(c, -2)
+
+	//we want it to print
+	// Result of SquareRoot of 10: 3.1622776601683795Received negative number: -2
+	// InvalidArgument
+	// We probably sent a negative number
+	// Result of SquareRoot of -2: 0
+}
+
+func doErrorCall(c calcpb.SumServiceClient, num int32) {
+	res, err := c.SquareRoot(context.Background(), &calcpb.SquareRootRequest{Number: num})
+
+	if err != nil {
+		respErr, ok := status.FromError(err)
+		if ok {
+			//actual error from grpc (good..we created it)
+			fmt.Printf("Error message from server: %v \n", respErr.Message())
+			fmt.Println(respErr.Code())
+			if respErr.Code() == codes.InvalidArgument {
+				fmt.Println("We probably sent a negative number")
+				return
+			}
+		} else {
+			log.Fatalf("Big Error we didnt create calling SquareRoot: %v", err)
+			return
+		}
+	}
+
+	fmt.Printf("Result of SquareRoot of %v: %v \n", num, res.GetNumberRoot())
 }
