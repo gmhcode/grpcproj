@@ -9,6 +9,8 @@ import (
 
 	"github.com/grpcproj/greet/greetpb"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 func main() {
@@ -24,7 +26,12 @@ func main() {
 	// doUnary(c)
 	// doServerStreaming(c)
 	// doClientStreaming(c)
-	doBiDiStreaming(c)
+	// doBiDiStreaming(c)
+
+	fmt.Println("giving Server 5 sec to respond.. should respond in 3 sec")
+	doUnaryWithDealine(c, 5*time.Second) //should complete
+	fmt.Println("giving Server 1 sec to respond.. should respond in 3 sec")
+	doUnaryWithDealine(c, 1*time.Second) //should timeout
 
 }
 
@@ -187,4 +194,35 @@ func doBiDiStreaming(c greetpb.GreetServiceClient) {
 
 	// block until everything is done.
 
+}
+
+func doUnaryWithDealine(c greetpb.GreetServiceClient, timeout time.Duration) {
+	fmt.Println("Starting to do a Streaming Client RPC...")
+	req := &greetpb.GreetWithDealineRequest{
+		Greeting: &greetpb.Greeting{
+			FirstName: "Greg",
+			LastName:  "Hughes",
+		},
+	}
+	//contex is things like wait timers and stuff, background i guess is just like a nil context
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	res, err := c.GreetWithDealine(ctx, req)
+
+	if err != nil {
+
+		statusErr, ok := status.FromError(err)
+		if ok {
+			if statusErr.Code() == codes.DeadlineExceeded {
+				fmt.Println("Timeout was hit! Deadline was exceeded")
+			} else {
+				fmt.Printf("unexpected Error: %v \n", statusErr)
+			}
+		} else {
+			log.Fatalf("error whil calline GreetWithDealine RPC: %v \n", err)
+		}
+		return
+	}
+	log.Printf("Respnse from Greet: %v", res.Result)
 }

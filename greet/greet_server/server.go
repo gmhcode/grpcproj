@@ -12,6 +12,8 @@ import (
 	"github.com/grpcproj/greet/greetpb"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type server struct{}
@@ -45,6 +47,29 @@ func (*server) GreetManyTimes(req *greetpb.GreetManyTimesRequest, stream greetpb
 	}
 	return nil
 }
+
+func (*server) GreetWithDealine(ctx context.Context, req *greetpb.GreetWithDealineRequest) (*greetpb.GreetWithDealineResponse, error) {
+	fmt.Printf("GreetWithDealine function was invoked with %v \n", req)
+
+	for i := 0; i < 3; i++ {
+		if ctx.Err() == context.Canceled {
+			// the client cancelled the request
+			fmt.Println("The client canceled the request!")
+			return nil, status.Error(codes.Canceled, "the client canceled the request")
+		}
+		time.Sleep(1 * time.Second)
+	}
+
+	// prints
+	// Greet function was invoked with greeting:{first_name:"Greg" last_name:"Hughes"}
+	firstName := req.GetGreeting().GetFirstName()
+	result := "Hello " + firstName
+	res := &greetpb.GreetWithDealineResponse{
+		Result: result,
+	}
+	return res, nil
+}
+
 func (*server) LongGreet(stream greetpb.GreetService_LongGreetServer) error {
 	fmt.Print("LongGreet function was invoked with a streaming request\n")
 	result := ""

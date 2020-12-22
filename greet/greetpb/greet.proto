@@ -41,6 +41,12 @@ message GreetEveryoneRequest {
 message GreetEveryoneResponse {
   string result = 1;
 }
+message GreetWithDealineRequest {
+  Greeting greeting = 1;
+}
+message GreetWithDealineResponse {
+  string result = 1;
+}
 
 service GreetService{
   //Unary
@@ -53,4 +59,9 @@ service GreetService{
   rpc LongGreet(stream LongGreetRequest) returns (LongGreetResponse) {};
 
   rpc GreetEveryone(stream GreetEveryoneRequest) returns (stream GreetEveryoneResponse) {};
+
+  // Unary With Dealine
+  rpc GreetWithDealine(GreetWithDealineRequest) returns (GreetWithDealineResponse) {};
+
+
 }
