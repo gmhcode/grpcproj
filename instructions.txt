@@ -1,0 +1,43 @@
+1. inside service add the rpc function
+
+  ex:
+  service {
+
+  rpc FindMaximum(stream FindMaximumRequest) returns (stream FindMaximumResponse) {};
+
+  }
+
+2. generate rpc command in terminal 
+
+  ex:
+  protoc calculator/calcpb/calc.proto --go_out=plugins=grpc:.
+
+3. go into the pb.go file and fine the server interface and find the function you just added, copy all of it (including parameters)
+
+Hint: go to the file and search for the new function, or "Server Interface" then copy the while new function and add it to the server file
+
+ex: pb.go file {
+
+  type SumServiceServer interface {
+
+  	FindMaximum(SumService_FindMaximumServer) error <-- copy this 
+
+  }
+
+}
+
+add it like this to the server file
+server.go file {
+  	FindMaximum(stream calcpb.SumService_FindMaximumServer) error{ <--put it in like this
+
+    } 
+}
+
+4. add business logic to function
+
+5. do same to client side.
+
+  
+
+
+  
