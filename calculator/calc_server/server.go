@@ -11,6 +11,7 @@ import (
 	"github.com/grpcproj/calculator/calcpb"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/reflection"
 	"google.golang.org/grpc/status"
 )
 
@@ -125,6 +126,10 @@ func main() {
 	s := grpc.NewServer()
 	//Gets the "Greet" functions ready
 	calcpb.RegisterSumServiceServer(s, &server{})
+	//Register reflection service on the GRPC Server
+	//use "evans" commant line tool to find the parameters for this.. which is basically postman for GRPC
+	reflection.Register(s)
+
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 
