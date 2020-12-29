@@ -31,6 +31,7 @@ type blogItem struct {
 }
 
 func (*server) CreateBlog(ctx context.Context, req *blogpb.CreateBlogRequest) (*blogpb.CreateBlogResponse, error) {
+	fmt.Println("Create blog request")
 	blog := req.GetBlog()
 	data := blogItem{
 		AuthorID: blog.GetAuthorId(),
@@ -70,7 +71,7 @@ func main() {
 	fmt.Println("Blog Service Started")
 
 	//Connect to MongoDB
-	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://foo:bar@localhost:27017"))
+	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://localhost:27017"))
 	if err != nil {
 		log.Fatalf("Failed to listen: %v", err)
 	}
