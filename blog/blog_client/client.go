@@ -33,8 +33,24 @@ func main() {
 	fmt.Println("Creating blog")
 	createdBlogResponse, err := c.CreateBlog(context.Background(), &blogpb.CreateBlogRequest{Blog: blog})
 	if err != nil {
-		log.Fatalf("Unexpected error: %v", err)
+		log.Fatalf("Unexpected error: %v \n", err)
 	}
-	fmt.Printf("Blog has been created: %v", createdBlogResponse)
+	fmt.Printf("Blog has been created: %v \n", createdBlogResponse)
+	blogID := createdBlogResponse.GetBlog().GetId()
+
+	//Read Blog
+	//Will throw an error
+	_, err2 := c.ReadBlog(context.Background(), &blogpb.ReadBlogRequest{BlogId: "1jh3hh38887"})
+
+	if err2 != nil {
+		fmt.Printf("Error Happened while reading %v \n", err2)
+	}
+
+	readBlogReq := &blogpb.ReadBlogRequest{BlogId: blogID}
+	readBlogRes, readBlogErr := c.ReadBlog(context.Background(), readBlogReq)
+	if readBlogErr != nil {
+		fmt.Printf("Error Happened while reading %v \n", readBlogErr)
+	}
+	fmt.Printf("Blog was read: %v \n", readBlogRes)
 	// doUnary(c)
 }
