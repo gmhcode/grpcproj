@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"io"
 	"log"
 
 	"github.com/grpcproj/blog/blogpb"
@@ -99,4 +100,30 @@ func main() {
 		fmt.Println("error happened while deleting ", deleteErr)
 	}
 	fmt.Println("Blog was deleted: ", deleteRes)
+
+	/*
+		.##.......####..######..########....########..##........#######...######....######.
+		.##........##..##....##....##.......##.....##.##.......##.....##.##....##..##....##
+		.##........##..##..........##.......##.....##.##.......##.....##.##........##......
+		.##........##...######.....##.......########..##.......##.....##.##...####..######.
+		.##........##........##....##.......##.....##.##.......##.....##.##....##........##
+		.##........##..##....##....##.......##.....##.##.......##.....##.##....##..##....##
+		.########.####..######.....##.......########..########..#######...######....######.
+	*/
+	stream, err := c.ListBlog(context.Background(), &blogpb.ListBlogRequest{})
+
+	if err != nil {
+		log.Fatalf("error while calling ListBlog RPC: %v", err)
+	}
+	for {
+		res, err := stream.Recv()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			log.Fatalf("Something Happened %v", err)
+		}
+		fmt.Println(res.GetBlog())
+
+	}
 }

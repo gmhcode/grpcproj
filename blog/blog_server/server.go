@@ -217,6 +217,51 @@ func dataToBlogPb(data *blogItem) *blogpb.Blog {
 	}
 }
 
+/*
+.##.......####..######..########....########..##........#######...######..
+.##........##..##....##....##.......##.....##.##.......##.....##.##....##.
+.##........##..##..........##.......##.....##.##.......##.....##.##.......
+.##........##...######.....##.......########..##.......##.....##.##...####
+.##........##........##....##.......##.....##.##.......##.....##.##....##.
+.##........##..##....##....##.......##.....##.##.......##.....##.##....##.
+.########.####..######.....##.......########..########..#######...######..
+*/
+func (*server) ListBlog(req *blogpb.ListBlogRequest, stream blogpb.BlogService_ListBlogServer) error {
+	cursor, err := collection.Find(context.Background(), bson.M{})
+	if err != nil {
+		fmt.Println("Hit")
+		return status.Errorf(
+			codes.Internal,
+			fmt.Sprintf("Unkown internal error: %v", err),
+		)
+	}
+	defer cursor.Close(context.Background())
+
+	for cursor.Next(context.Background()) {
+
+		data := &blogItem{}
+		err := cursor.Decode(data)
+
+		if err != nil {
+			return status.Errorf(
+				codes.Internal,
+				fmt.Sprintf("error while decoding data from mongodb: %v", err),
+			)
+
+		}
+		dBlog := dataToBlogPb(data)
+		fmt.Println("DBlog Auth", dBlog.Title)
+		stream.Send(&blogpb.ListBlogResponse{Blog: dataToBlogPb(data)})
+	}
+	if err := cursor.Err(); err != nil {
+		return status.Errorf(
+			codes.Internal,
+			fmt.Sprintf("Unkown internal error: %v", err),
+		)
+	}
+	return nil
+}
+
 func main() {
 	// if we crash the go code, we get the file name and line number
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
