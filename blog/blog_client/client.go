@@ -38,7 +38,15 @@ func main() {
 	fmt.Printf("Blog has been created: %v \n", createdBlogResponse)
 	blogID := createdBlogResponse.GetBlog().GetId()
 
-	//Read Blog
+	///*
+	//.########..########....###....########.....########..##........#######...######..
+	//.##.....##.##.........##.##...##.....##....##.....##.##.......##.....##.##....##.
+	//.##.....##.##........##...##..##.....##....##.....##.##.......##.....##.##.......
+	//.########..######...##.....##.##.....##....########..##.......##.....##.##...####
+	//.##...##...##.......#########.##.....##....##.....##.##.......##.....##.##....##.
+	//.##....##..##.......##.....##.##.....##....##.....##.##.......##.....##.##....##.
+	//.##.....##.########.##.....##.########.....########..########..#######...######..
+	//*/
 	//Will throw an error
 	_, err2 := c.ReadBlog(context.Background(), &blogpb.ReadBlogRequest{BlogId: "1jh3hh38887"})
 
@@ -49,8 +57,23 @@ func main() {
 	readBlogReq := &blogpb.ReadBlogRequest{BlogId: blogID}
 	readBlogRes, readBlogErr := c.ReadBlog(context.Background(), readBlogReq)
 	if readBlogErr != nil {
+		fmt.Println("This error is supposed to happen")
 		fmt.Printf("Error Happened while reading %v \n", readBlogErr)
 	}
 	fmt.Printf("Blog was read: %v \n", readBlogRes)
 	// doUnary(c)
+
+	//UpdateBlog
+	newBlog := &blogpb.Blog{
+		Id:       blogID,
+		AuthorId: "Changed Author",
+		Title:    "My first Blog (edited)",
+		Content:  "Content of the first blog, with some awesome additions",
+	}
+	updateRes, updateErr := c.UpdateBlog(context.Background(), &blogpb.UpdateBlogRequest{Blog: newBlog})
+
+	if updateErr != nil {
+		fmt.Println("error happened while updating ", updateErr)
+	}
+	fmt.Println("Blog was updated: ", updateRes)
 }
